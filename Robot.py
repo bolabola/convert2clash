@@ -26,12 +26,15 @@ def safe_decode(s):
 
 # 解析vmess节点
 def decode_v2ray_node(nodes):
+    
     proxy_list = []
     for node in nodes:
         decode_proxy = node.decode('utf-8')[8:]
         if not decode_proxy or decode_proxy.isspace():
             log('vmess节点信息为空，跳过该节点')
             continue
+        #print(decode_proxy)
+        decode_proxy += "=" * ((4 - len(decode_proxy) % 4) % 4) #ugh
         proxy_str = base64.b64decode(decode_proxy).decode('utf-8')
         proxy_dict = json.loads(proxy_str)
         proxy_list.append(proxy_dict)
@@ -274,19 +277,23 @@ def get_proxies(urls):
             elif node.startswith(b'ssr://'):
                 ssr_urls.append(node)
             else:
-                pass
-        clash_node = []
-        if len(v2ray_urls) > 0:
-            decode_proxy = decode_v2ray_node(v2ray_urls)
-            clash_node = v2ray_to_clash(decode_proxy)
+                pass  
+        
         if len(ss_urls) > 0:
             decode_proxy = decode_ss_node(ss_urls)
-            clash_node = ss_to_clash(decode_proxy)
+            ss_node = ss_to_clash(decode_proxy)
+            proxy_list['proxy_list'].extend(ss_node['proxy_list'])  
+            proxy_list['proxy_names'].extend(ss_node['proxy_names'])  
         if len(ssr_urls) > 0:
             decode_proxy = decode_ssr_node(ssr_urls)
-            clash_node = ssr_to_clash(decode_proxy)
-        proxy_list['proxy_list'].extend(clash_node['proxy_list'])
-        proxy_list['proxy_names'].extend(clash_node['proxy_names'])
+            ssr_node = ssr_to_clash(decode_proxy)
+            proxy_list['proxy_list'].extend(ssr_node['proxy_list'])  
+            proxy_list['proxy_names'].extend(ssr_node['proxy_names'])  
+        if len(v2ray_urls) > 0:
+            decode_proxy = decode_v2ray_node(v2ray_urls)
+            v2ray_node = v2ray_to_clash(decode_proxy)
+            proxy_list['proxy_list'].extend(v2ray_node['proxy_list'])  
+            proxy_list['proxy_names'].extend(v2ray_node['proxy_names'])    
     log('共发现:{}个节点'.format(len(proxy_list['proxy_names'])))
     return proxy_list
 
@@ -343,7 +350,7 @@ if __name__ == '__main__':
     # 输出路径
     output_path = './output.yaml'
     # 规则策略
-    config_url = 'https://cdn.jsdelivr.net/gh/celetor/convert2clash@main/config.yaml'
+    config_url = ''
     config_path = './config.yaml'
 
     if sub_url is None or sub_url == '':
