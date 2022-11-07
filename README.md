@@ -13,3 +13,6 @@
      2. 再执行python Robot.py 
 #### 使用说明②:
  * 从[Release](https://github.com/Celeter/convert2clash/releases/latest)下载可执行程序，直接运行
+
+------------------------------------------------------------------------
+[![Run on Repl.it](https://replit.com/badge/github/bolabola/convert2clash)](https://replit.com/new/github/bolabola/convert2clash)
